@@ -196,7 +196,7 @@ client.on(Events.MessageCreate, async message => {
 
     if (banSucceeded) {
       return message.reply({
-        content: `that nigga dead, oh the dm ${dmSent ? "was sent too type shit" : "aint send tho"}.`,
+        content: `that nigga dead, the dm ${dmSent ? "was sent too type shit" : "aint send tho"}.`,
         allowedMentions: { users: [] },
       });
     } else {
