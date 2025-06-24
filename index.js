@@ -53,8 +53,6 @@ const commands = [
   }
 })();
 
-
-
 // ========== Your original code starts here (unchanged) ===========
 client.once(Events.ClientReady, () => {
   console.log(`🤖 Logged in as ${client.user?.tag}`);
@@ -272,9 +270,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   const attachment = interaction.options.getAttachment("video");
-  if (!attachment || !attachment.url.endsWith(".mp4")) {
+  if (!attachment || !attachment.url.endsWith(".mp4,.mov,.webm,.mkv,.m4v,.avi,.avc,.hevc,.aac")) {
     return await interaction.reply({
-      content: "Please upload a valid MP4 video.",
+      content: "Please upload a valid video format.",
       ephemeral: true,
     });
   }
