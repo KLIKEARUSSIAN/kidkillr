@@ -290,8 +290,10 @@ if (
   });
 }
 
-  const inputPath = `./input-${Date.now()}.mp4`;
-  const outputPath = `./output-${Date.now()}.gif`;
+  const url = new URL(attachment.url);
+const ext = url.pathname.split('.').pop(); // get the file extension without dot
+const inputPath = `./input-${Date.now()}.${ext}`;
+const outputPath = `./output-${Date.now()}.gif`;
 
   await interaction.deferReply({ ephemeral: true });
 
