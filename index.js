@@ -269,29 +269,46 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-const attachment = interaction.options.getAttachment("video");
-const validExtensions = [
-  ".mp4", ".mov", ".webm", ".mkv", ".m4v", ".avi",
-  ".avc", ".hevc", ".aac", ".flv", ".3gp", ".ts",
-  ".mpeg", ".mpg", ".wmv"
-];
+  const attachment = interaction.options.getAttachment("video");
+  const validExtensions = [
+    ".mp4", ".mov", ".webm", ".mkv", ".m4v", ".avi",
+    ".avc", ".hevc", ".aac", ".flv", ".3gp", ".ts",
+    ".mpeg", ".mpg", ".wmv"
+  ];
 
-if (
-  !attachment ||
-  !validExtensions.some(ext => attachment.url.toLowerCase().endsWith(ext))
-) {
-  return await interaction.reply({
-    content: "Please upload a valid video format (e.g. mp4, mov, webm, mkv, avi, etc).",
-    ephemeral: true
-  });
-}
+  if (!attachment) {
+    return await interaction.reply({
+      content: "Please upload a valid video format (e.g. mp4, mov, webm, mkv, avi, etc).",
+      ephemeral: true,
+    });
+  }
 
-const videoUrl = new URL(attachment.url);
-const ext = videoUrl.pathname.split('.').pop();
-const inputPath = `./input-${Date.now()}.${ext}`;
-const outputPath = `./output-${Date.now()}.gif`;
+  // Parse URL and get pathname to avoid query string issues
+  let videoUrl;
+  try {
+    videoUrl = new URL(attachment.url);
+  } catch {
+    return await interaction.reply({
+      content: "Invalid attachment URL.",
+      ephemeral: true,
+    });
+  }
 
-// Continue with your logic..
+  const pathname = videoUrl.pathname.toLowerCase();
+
+  // Check if extension matches any valid extension
+  const matchedExt = validExtensions.find(ext => pathname.endsWith(ext));
+  if (!matchedExt) {
+    return await interaction.reply({
+      content: "Please upload a valid video format (e.g. mp4, mov, webm, mkv, avi, etc).",
+      ephemeral: true,
+    });
+  }
+
+  // Use the matched extension for input filename
+  const inputPath = `./input-${Date.now()}${matchedExt}`;
+  const outputPath = `./output-${Date.now()}.gif`;
+
   await interaction.deferReply({ ephemeral: true });
 
   try {
@@ -306,12 +323,12 @@ const outputPath = `./output-${Date.now()}.gif`;
       if (error) {
         console.error("FFmpeg error:", error);
         return await interaction.editReply(
-          "FFmpeg failed. cmon my nigga 10 seconds or less."
+          "FFmpeg failed. Please ensure the video is 10 seconds or less."
         );
       }
 
       const gif = new AttachmentBuilder(outputPath);
-      await interaction.editReply({ content: "word", files: [gif] });
+      await interaction.editReply({ content: "Here is your GIF!", files: [gif] });
 
       fs.unlinkSync(inputPath);
       fs.unlinkSync(outputPath);
