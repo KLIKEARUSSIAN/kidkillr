@@ -269,13 +269,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  const attachment = interaction.options.getAttachment("video");
-  if (!attachment || !attachment.url.endsWith(".mp4,.mov,.webm,.mkv,.m4v,.avi,.avc,.hevc,.aac")) {
-    return await interaction.reply({
-      content: "Please upload a valid video format.",
-      ephemeral: true,
-    });
-  }
+const attachment = interaction.options.getAttachment("video");
+const validExtensions = [
+  ".mp4", ".mov", ".webm", ".mkv", ".m4v", ".avi",
+  ".avc", ".hevc", ".aac", ".flv", ".3gp", ".ts",
+  ".mpeg", ".mpg", ".wmv"
+];
+
+if (
+  !attachment ||
+  !validExtensions.some(ext => attachment.url.toLowerCase().endsWith(ext))
+) {
+  return await interaction.reply({
+    content: "Please upload a valid video format (e.g. mp4, mov, webm, mkv, avi, etc).",
+    ephemeral: true
+  });
+}
 
   const inputPath = `./input-${Date.now()}.mp4`;
   const outputPath = `./output-${Date.now()}.gif`;
