@@ -276,13 +276,9 @@ const validExtensions = [
   ".mpeg", ".mpg", ".wmv"
 ];
 
-// Extract the pathname from the URL (strip query string)
-const url = new URL(attachment?.url ?? "");
-const pathname = url.pathname.toLowerCase();
-
 if (
   !attachment ||
-  !validExtensions.some(ext => pathname.endsWith(ext))
+  !validExtensions.some(ext => attachment.url.toLowerCase().endsWith(ext))
 ) {
   return await interaction.reply({
     content: "Please upload a valid video format (e.g. mp4, mov, webm, mkv, avi, etc).",
@@ -290,11 +286,12 @@ if (
   });
 }
 
-  const url = new URL(attachment.url);
-const ext = url.pathname.split('.').pop(); // get the file extension without dot
+const videoUrl = new URL(attachment.url);
+const ext = videoUrl.pathname.split('.').pop();
 const inputPath = `./input-${Date.now()}.${ext}`;
 const outputPath = `./output-${Date.now()}.gif`;
 
+// Continue with your logic..
   await interaction.deferReply({ ephemeral: true });
 
   try {
