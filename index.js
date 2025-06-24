@@ -296,12 +296,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
       if (error) {
         console.error("FFmpeg error:", error);
         return await interaction.editReply(
-          "⚠️ FFmpeg failed. Make sure your video is 10 seconds or less."
+          "FFmpeg failed. cmon my nigga 10 seconds or less."
         );
       }
 
       const gif = new AttachmentBuilder(outputPath);
-      await interaction.editReply({ content: "🎬 Here is your GIF!", files: [gif] });
+      await interaction.editReply({ content: "word", files: [gif] });
 
       fs.unlinkSync(inputPath);
       fs.unlinkSync(outputPath);
