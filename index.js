@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events } from "discord.js";More actions
+import { Client, GatewayIntentBits, Events } from "discord.js";
 import { config } from "dotenv";
 import "./keepAlive.js";
 config();
