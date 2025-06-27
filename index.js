@@ -1,11 +1,6 @@
-import { Client, GatewayIntentBits, Events, AttachmentBuilder } from "discord.js";
+import { Client, GatewayIntentBits, Events } from "discord.js";More actions
 import { config } from "dotenv";
 import "./keepAlive.js";
-import { exec } from "child_process";
-import fs from "fs";
-import fetch from "node-fetch"; // install node-fetch@2
-import { REST, Routes, SlashCommandBuilder } from "discord.js";
-
 config();
 
 const client = new Client({
@@ -14,53 +9,24 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildBans,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.MessageContent
   ],
 });
 
-const BANNED_ROLE_ID = "1382983036206973028";
-const GUILD_IDS = ["1382756114688639127", "1382982812197589114"];
-
-const ALLOWED_USERS = [
-  "771087250826067989",
-  "242140858692927489",
-];
-
-const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
-
-const commands = [
-  new SlashCommandBuilder()
-    .setName("gif")
-    .setDescription("Convert a 10-second MP4 video to a 720p 30fps GIF")
-    .addAttachmentOption((option) =>
-      option.setName("video").setDescription("Upload a 10-second MP4 video").setRequired(true)
-    )
-    .toJSON(),
-];
-
-(async () => {
-  try {
-    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
-    console.log("✅ Slash command /gif registered globally");
-  } catch (error) {
-    console.error("❌ Failed to register slash command:", error);
-  }
-})();
+const BANNED_ROLE_ID = "1382983036206973028"; // Replace with your actual "minor" role ID
+const GUILD_IDS = ["1382756114688639127", "1382982812197589114"]; // All guilds to sync bans to
 
 client.once(Events.ClientReady, () => {
   console.log(`🤖 Logged in as ${client.user?.tag}`);
-  console.log(
-    "✅ Connected guilds:",
-    client.guilds.cache.map((g) => `${g.name} (${g.id})`).join(", ")
-  );
+  console.log("✅ Connected guilds:", client.guilds.cache.map(g => `${g.name} (${g.id})`).join(", "));
 });
 
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
   console.log(`[DEBUG] GuildMemberUpdate triggered for ${newMember.user.tag}`);
 
-  const oldRoleIds = new Set(oldMember.roles.cache.map((role) => role.id));
-  const newRoleIds = new Set(newMember.roles.cache.map((role) => role.id));
-  const addedRoleIds = [...newRoleIds].filter((id) => !oldRoleIds.has(id));
+  const oldRoleIds = new Set(oldMember.roles.cache.map(role => role.id));
+  const newRoleIds = new Set(newMember.roles.cache.map(role => role.id));
+  const addedRoleIds = [...newRoleIds].filter(id => !oldRoleIds.has(id));
 
   console.log(`[DEBUG] Roles added to ${newMember.user.tag}:`, addedRoleIds);
   if (!addedRoleIds.includes(BANNED_ROLE_ID)) {
@@ -75,18 +41,13 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
   try {
     await newMember.send(
       `You have been banned from **DEMON TIME 18+** due to selecting minor role. If you would like to appeal, join here. 
-
-      ‎||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||
+      ‎||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||
 
 _ _
-
 # _ _ 
-
 -# _ _ 
-
 https://discord.gg/VarTGVQQac
-      `
-    );
+    `);
     console.log(`📬 DM sent to ${newMember.user.tag}`);
   } catch (err) {
     console.warn("❌ Failed to DM user:", err);
@@ -105,27 +66,21 @@ https://discord.gg/VarTGVQQac
       const targetMember = await guild.members.fetch(newMember.id).catch(() => null);
 
       console.log(`[DEBUG] Preparing to ban in ${guild.name}`);
-      console.log(
-        `[DEBUG] Bot role: ${botMember?.roles?.highest.name} (${botMember?.roles?.highest?.position})`
-      );
-      console.log(
-        `[DEBUG] Target: ${targetMember?.user.tag ?? newMember.id}`
-      );
-      console.log(
-        `[DEBUG] Target role: ${targetMember?.roles?.highest.name} (${targetMember?.roles?.highest?.position})`
-      );
+      console.log(`[DEBUG] Bot role: ${botMember?.roles?.highest.name} (${botMember?.roles?.highest?.position})`);
+      console.log(`[DEBUG] Target: ${targetMember?.user.tag ?? newMember.id}`);
+      console.log(`[DEBUG] Target role: ${targetMember?.roles?.highest?.name} (${targetMember?.roles?.highest?.position})`);
 
       if (!targetMember) {
         console.warn(`⚠️ Member ${newMember.id} not found in ${guild.name}, banning by ID`);
         await guild.bans.create(newMember.id, {
-          reason: "Banned role assigned (auto-ban, user not in server)",
+          reason: "Banned role assigned (auto-ban, user not in server)"
         });
         console.log(`🔨 Banned user ID ${newMember.id} from ${guild.name} via bans.create`);
         continue;
       }
 
       await guild.members.ban(newMember.id, {
-        reason: "dumbass nigga picked the minor role",
+        reason: "dumbass nigga picked the minor role"
       });
       console.log(`🔨 Banned ${newMember.user.tag} from ${guild.name}`);
     } catch (err) {
@@ -136,17 +91,19 @@ https://discord.gg/VarTGVQQac
   }
 });
 
-client.on(Events.MessageCreate, async (message) => {
+client.on(Events.MessageCreate, async message => {
   if (message.content === "$checkme" && message.guild) {
     const member = await message.guild.members.fetch(message.author.id);
-    const roles = member.roles.cache.map((role) => `${role.name} (${role.id})`);
+    const roles = member.roles.cache.map(role => `${role.name} (${role.id})`);
     console.log(`[DEBUG] ${message.author.tag} has roles:`, roles);
 
     message.reply({
-      content: `Your roles:\n${roles.join("\n") || "None"}`,
+      content: `Your roles:
+${roles.join("\n") || "None"}`
     });
   }
 
+  // ✅ Ping command added here without changing any existing logic
   if (message.content === "$ping") {
     const sent = await message.channel.send("sigh...");
     const latency = sent.createdTimestamp - message.createdTimestamp;
@@ -155,22 +112,23 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
-const BAN_PERMISSION_ROLE_ID = "1383850930155421838";
+
+// ============================
+// 🚨 Additional Ban Commands
+// ============================
+const BAN_PERMISSION_ROLE_ID = "1383850930155421838"; // Replace with your actual moderator role ID
 
 function getBanDMMessage(reason) {
   return `You Have Been Cross-Server Banned for ${reason}. If you would like to appeal, join here. 
-      ‎||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||
+      ‎||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||
 
 _ _
-
 # _ _ 
-
 -# _ _ 
-
 https://discord.gg/VarTGVQQac`;
 }
 
-client.on(Events.MessageCreate, async (message) => {
+client.on(Events.MessageCreate, async message => {
   if (message.author.bot || !message.guild) return;
 
   if (message.content === "$dmcheck") {
@@ -222,9 +180,13 @@ client.on(Events.MessageCreate, async (message) => {
       try {
         const member = await guild.members.fetch(userId).catch(() => null);
         if (!member) {
-          await guild.bans.create(userId, { reason: `Network ban: ${reason}` });
+          await guild.bans.create(userId, {
+            reason: `Network ban: ${reason}`,
+          });
         } else {
-          await member.ban({ reason: `Network ban: ${reason}` });
+          await member.ban({
+            reason: `Network ban: ${reason}`,
+          });
         }
         banSucceeded = true;
       } catch (err) {
@@ -234,87 +196,19 @@ client.on(Events.MessageCreate, async (message) => {
 
     if (banSucceeded) {
       return message.reply({
-        content: `that nigga dead, the dm ${dmSent ? "was sent too type shit" : "aint send tho"}.`,
+        content: `that nigga dead, the dm ${dmSent ? "was sent tho" : "aint send tho"}.`,
         allowedMentions: { users: [] },
       });
+    } else {
+      return message.reply(`yo dis shit not workin cuh they may not exist or already be banned.`);
     }
-
-    return message.reply("yo dis shit not workin cuh they may not exist or already be banned.");
   }
 });
 
-client.on(Events.GuildBanAdd, (ban) => {
+
+client.on(Events.GuildBanAdd, async ban => {
   if (ban.user.bot) return;
   console.log(`📛 User ${ban.user.tag} was banned in ${ban.guild.name}`);
-});
-
-client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-  if (interaction.commandName !== "gif") return;
-
-  if (!ALLOWED_USERS.includes(interaction.user.id)) {
-    return await interaction.reply({ content: "❌ You do not have permission to use this command.", ephemeral: true });
-  }
-
-  const attachment = interaction.options.getAttachment("video");
-  const validExtensions = [
-    ".mp4", ".mov", ".webm", ".mkv", ".m4v", ".avi",
-    ".avc", ".hevc", ".aac", ".flv", ".3gp", ".ts",
-    ".mpeg", ".mpg", ".wmv"
-  ];
-
-  if (!attachment) {
-    return await interaction.reply({
-      content: "Please upload a valid video format (e.g. mp4, mov, webm, mkv, avi, etc).",
-      ephemeral: true,
-    });
-  }
-
-  let videoUrl;
-  try {
-    videoUrl = new URL(attachment.url);
-  } catch {
-    return await interaction.reply({ content: "Invalid attachment URL.", ephemeral: true });
-  }
-
-  const pathname = videoUrl.pathname.toLowerCase();
-  const matchedExt = validExtensions.find((ext) => pathname.endsWith(ext));
-  if (!matchedExt) {
-    return await interaction.reply({
-      content: "Please upload a valid video format (e.g. mp4, mov, webm, mkv, avi, etc).",
-      ephemeral: true,
-    });
-  }
-
-  const inputPath = `./input-${Date.now()}${matchedExt}`;
-  const outputPath = `./output-${Date.now()}.gif`;
-
-  await interaction.deferReply({ ephemeral: true });
-
-  try {
-    const res = await fetch(attachment.url);
-    const buffer = Buffer.from(await res.arrayBuffer());
-    fs.writeFileSync(inputPath, buffer);
-
-    const ffmpegPath = "./bin/ffmpeg";
-    const command = `${ffmpegPath} -i "${inputPath}" -vf "fps=30,scale=1280:-1:flags=lanczos" -t 10 "${outputPath}"`;
-
-    exec(command, async (error) => {
-      if (error) {
-        console.error("FFmpeg error:", error);
-        return await interaction.editReply("FFmpeg failed. Please ensure the video is 10 seconds or less.");
-      }
-
-      const gif = new AttachmentBuilder(outputPath);
-      await interaction.editReply({ content: "Here is your GIF!", files: [gif] });
-
-      fs.unlinkSync(inputPath);
-      fs.unlinkSync(outputPath);
-    });
-  } catch (err) {
-    console.error("Error in /gif command:", err);
-    await interaction.editReply("❌ Something went wrong while processing your video.");
-  }
 });
 
 if (!process.env.BOT_TOKEN) {
