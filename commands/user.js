@@ -34,7 +34,7 @@ async function checkUsernameAvailability(username) {
   }
 }
 
-export const data = new SlashCommandBuilder()
+const data = new SlashCommandBuilder()
   .setName('user')
   .setDescription('Generate available Discord usernames using a word')
   .addStringOption(option =>
@@ -64,7 +64,7 @@ export const data = new SlashCommandBuilder()
       )
       .setRequired(true));
 
-export async function execute(interaction) {
+async function execute(interaction) {
   const word = interaction.options.getString('word').toLowerCase();
   const position = interaction.options.getString('position');
   const length = interaction.options.getInteger('length') || 12;
@@ -101,3 +101,6 @@ export async function execute(interaction) {
 
   await interaction.editReply(`✅ **Available usernames:**\n\n${available.map(u => `• \`${u}\``).join('\n')}`);
 }
+
+export default { data, execute };
+
