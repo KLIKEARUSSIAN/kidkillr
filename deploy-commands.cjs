@@ -1,18 +1,24 @@
 const { REST, Routes } = require('discord.js');
+const { config } = require('dotenv');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+
+config();
 
 const commands = [];
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-  const command = require(path.join(commandsPath, file));
-  commands.push(command.data.toJSON());
+  const command = require(`./commands/${file}`);
+  const cmd = command.default || command; // support both default export and CommonJS
+  if (cmd?.data) {
+    commands.push(cmd.data.toJSON());
+  } else {
+    console.warn(`⚠️ Skipping ${file} because it doesn't export a valid command`);
+  }
 }
 
-const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
 
 (async () => {
   try {
