@@ -9,7 +9,7 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildBans,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -20,24 +20,42 @@ import userCommand from "./commands/user.js";
 client.commands = new Collection();
 client.commands.set(userCommand.data.name, userCommand);
 
-const BANNED_ROLE_ID = "1382983036206973028"; // Replace with your actual "minor" role ID
-const GUILD_IDS = ["1382756114688639127", "1382982812197589114"]; // All guilds to sync bans to
+const BANNED_ROLE_ID = "1382983036206973028"; // Minor role ID
+const GUILD_IDS = ["1382756114688639127", "1382982812197589114"]; // Guilds to sync bans
+
+// Mod role allowed to use $ban
+const BAN_PERMISSION_ROLE_ID = "1383850930155421838";
+
+function getBanDMMessage(reason) {
+  return `You Have Been Cross-Server Banned for ${reason}. If you would like to appeal, join here. 
+  ‎||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||
+  
+  _ _
+  # _ _
+  -# _ _
+  https://discord.gg/VarTGVQQac`;
+}
 
 client.once(Events.ClientReady, () => {
   console.log(`🤖 Logged in as ${client.user?.tag}`);
-  console.log("✅ Connected guilds:", client.guilds.cache.map(g => `${g.name} (${g.id})`).join(", "));
+  console.log(
+    "✅ Connected guilds:",
+    client.guilds.cache.map((g) => `${g.name} (${g.id})`).join(", ")
+  );
 });
 
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
   console.log(`[DEBUG] GuildMemberUpdate triggered for ${newMember.user.tag}`);
 
-  const oldRoleIds = new Set(oldMember.roles.cache.map(role => role.id));
-  const newRoleIds = new Set(newMember.roles.cache.map(role => role.id));
-  const addedRoleIds = [...newRoleIds].filter(id => !oldRoleIds.has(id));
+  const oldRoleIds = new Set(oldMember.roles.cache.map((role) => role.id));
+  const newRoleIds = new Set(newMember.roles.cache.map((role) => role.id));
+  const addedRoleIds = [...newRoleIds].filter((id) => !oldRoleIds.has(id));
 
   console.log(`[DEBUG] Roles added to ${newMember.user.tag}:`, addedRoleIds);
   if (!addedRoleIds.includes(BANNED_ROLE_ID)) {
-    console.log(`[DEBUG] Banned role (${BANNED_ROLE_ID}) was not among added roles.`);
+    console.log(
+      `[DEBUG] Banned role (${BANNED_ROLE_ID}) was not among added roles.`
+    );
     return;
   }
 
@@ -73,21 +91,29 @@ https://discord.gg/VarTGVQQac
       const targetMember = await guild.members.fetch(newMember.id).catch(() => null);
 
       console.log(`[DEBUG] Preparing to ban in ${guild.name}`);
-      console.log(`[DEBUG] Bot role: ${botMember?.roles?.highest.name} (${botMember?.roles?.highest?.position})`);
+      console.log(
+        `[DEBUG] Bot role: ${botMember?.roles?.highest.name} (${botMember?.roles?.highest?.position})`
+      );
       console.log(`[DEBUG] Target: ${targetMember?.user.tag ?? newMember.id}`);
-      console.log(`[DEBUG] Target role: ${targetMember?.roles?.highest?.name} (${targetMember?.roles?.highest?.position})`);
+      console.log(
+        `[DEBUG] Target role: ${targetMember?.roles?.highest?.name} (${targetMember?.roles?.highest?.position})`
+      );
 
       if (!targetMember) {
-        console.warn(`⚠️ Member ${newMember.id} not found in ${guild.name}, banning by ID`);
+        console.warn(
+          `⚠️ Member ${newMember.id} not found in ${guild.name}, banning by ID`
+        );
         await guild.bans.create(newMember.id, {
-          reason: "Banned role assigned (auto-ban, user not in server)"
+          reason: "Banned role assigned (auto-ban, user not in server)",
         });
-        console.log(`🔨 Banned user ID ${newMember.id} from ${guild.name} via bans.create`);
+        console.log(
+          `🔨 Banned user ID ${newMember.id} from ${guild.name} via bans.create`
+        );
         continue;
       }
 
       await guild.members.ban(newMember.id, {
-        reason: "nigga picked the minor role"
+        reason: "User assigned banned role (minor role)",
       });
       console.log(`🔨 Banned ${newMember.user.tag} from ${guild.name}`);
     } catch (err) {
@@ -98,39 +124,25 @@ https://discord.gg/VarTGVQQac
   }
 });
 
-client.on(Events.MessageCreate, async message => {
-  if (message.content === "$checkme" && message.guild) {
-   if (message.content === "$checkme" && message.guild) {
+client.on(Events.MessageCreate, async (message) => {
+  if (message.author.bot || !message.guild) return;
+
+  if (message.content === "$checkme") {
     const member = await message.guild.members.fetch(message.author.id);
-    const roles = member.roles.cache.map(role => `${role.name} (${role.id})`);
+    const roles = member.roles.cache.map((role) => `${role.name} (${role.id})`);
     console.log(`[DEBUG] ${message.author.tag} has roles:`, roles);
 
     message.reply({
-      content: `Your roles:
-${roles.join("\n") || "None"}`
+      content: `Your roles:\n${roles.join("\n") || "None"}`,
     });
   }
-  
+
   if (message.content === "$ping") {
-   const sent = await message.channel.send("sigh...");
+    const sent = await message.channel.send("sigh...");
     const latency = sent.createdTimestamp - message.createdTimestamp;
     const apiLatency = Math.round(client.ws.ping);
-    sent.edit(`nosy ass nigga. Latency is ${latency}ms. API Latency is ${apiLatency}ms.`);
+    sent.edit(`Latency: ${latency}ms. API Latency: ${apiLatency}ms.`);
   }
-  const BAN_PERMISSION_ROLE_ID = "1383850930155421838"; // Replace with your actual moderator role ID
-
-function getBanDMMessage(reason) {
-  return `You Have Been Cross-Server Banned for ${reason}. If you would like to appeal, join here. 
-      ‎||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||||‍||
-
-_ _
-# _ _ 
--# _ _ 
-https://discord.gg/VarTGVQQac`;
-}
-
-
-  if (message.author.bot || !message.guild) return;
 
   if (message.content === "$dmcheck") {
     const dmMessage = getBanDMMessage("selecting minor role");
@@ -145,7 +157,7 @@ https://discord.gg/VarTGVQQac`;
   }
 
   if (message.content.startsWith("$ban ")) {
-  const parts = message.content.split(" ");
+    const parts = message.content.split(" ");
     const userId = parts[1];
     const reason = parts.slice(2).join(" ") || "No reason provided.";
 
@@ -194,24 +206,25 @@ https://discord.gg/VarTGVQQac`;
         console.error(`❌ Failed to ban ${userId} in ${guild.name}:`, err);
       }
     }
+
     if (banSucceeded) {
       return message.reply({
-        content: `that nigga dead, tho DM ${dmSent ? "was sent tho" : "aint send tho."}`,
+        content: `that nigga dead, DM ${dmSent ? "sent." : "failed to send tho."}`,
         allowedMentions: { users: [] },
       });
     } else {
-      return message.reply(`yo this shit not workin cuh they may not exist or already be banned.`);
+      return message.reply(`yo this shit not workin bro, they may not exist or already be banned.`);
     }
   }
 });
 
-client.on(Events.GuildBanAdd, async ban => {
- if (ban.user.bot) return;
+client.on(Events.GuildBanAdd, async (ban) => {
+  if (ban.user.bot) return;
   console.log(`📛 User ${ban.user.tag} was banned in ${ban.guild.name}`);
 });
 
-// ** NEW: Interaction handler for slash commands **
-client.on(Events.InteractionCreate, async interaction => {
+// Slash commands interaction handler
+client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
@@ -220,14 +233,14 @@ client.on(Events.InteractionCreate, async interaction => {
   try {
     await command.execute(interaction);
   } catch (error) {
-    console.error('Error executing command:', error);
+    console.error("Error executing command:", error);
     if (!interaction.replied) {
-      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+      await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
   }
 });
 
-// IMPORTANT: keep your existing BOT_TOKEN env check here, just fix the variable name to BOT_TOKEN
+// Bot token env check and login
 if (!process.env.BOT_TOKEN) {
   console.error("❌ BOT_TOKEN environment variable is not set. Please check your .env file.");
   process.exit(1);
