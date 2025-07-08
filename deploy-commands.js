@@ -1,17 +1,14 @@
-import { REST, Routes } from 'discord.js';
-import fs from 'fs';
-import path from 'path';
-import dotenv from 'dotenv';
-
-dotenv.config();
+const { REST, Routes } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
+require('dotenv').config();
 
 const commands = [];
-const commandsPath = path.join(process.cwd(), 'commands');
+const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = await import(filePath);
+  const command = require(path.join(commandsPath, file));
   commands.push(command.data.toJSON());
 }
 
@@ -23,11 +20,11 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
     await rest.put(
       Routes.applicationCommands(process.env.CLIENT_ID),
-      { body: commands },
+      { body: commands }
     );
 
     console.log('✅ Successfully reloaded application (/) commands.');
   } catch (error) {
-    console.error(error);
+    console.error('❌ Failed to register commands:', error);
   }
 })();
