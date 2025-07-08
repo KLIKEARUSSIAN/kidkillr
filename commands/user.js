@@ -49,11 +49,6 @@ const data = new SlashCommandBuilder()
         { name: 'end', value: 'end' }
       )
       .setRequired(true))
-  .addIntegerOption(option =>
-    option.setName('length')
-      .setDescription('Max length of the username (2–32)')
-      .setMinValue(2)
-      .setMaxValue(32))
   .addStringOption(option =>
     option.setName('filltype')
       .setDescription('Type of word to fill with')
@@ -62,7 +57,12 @@ const data = new SlashCommandBuilder()
         { name: 'verb', value: 'verb' },
         { name: 'adjective', value: 'adjective' }
       )
-      .setRequired(true));
+      .setRequired(true))
+  .addIntegerOption(option =>
+    option.setName('length')
+      .setDescription('Max length of the username (2–32)')
+      .setMinValue(2)
+      .setMaxValue(32));
 
 async function execute(interaction) {
   const word = interaction.options.getString('word').toLowerCase();
@@ -103,4 +103,3 @@ async function execute(interaction) {
 }
 
 export default { data, execute };
-
