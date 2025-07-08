@@ -1,12 +1,10 @@
 import { SlashCommandBuilder } from 'discord.js';
 import fetch from 'node-fetch';
 
-// Built-in word lists (expand as needed)
 const adjectives = ["chill", "brave", "silent", "sharp", "frozen", "swift", "dark", "pure", "wild", "quiet", "lone"];
 const nouns = ["ghost", "storm", "hunter", "shade", "blade", "void", "flame", "spirit", "hawk", "wolf"];
 const verbs = ["strike", "run", "dash", "drift", "glide", "charge", "burn", "fade", "pierce", "hunt"];
 
-// In-memory cache of previous results by setting key
 const previousResults = new Map();
 
 function delay(ms) {
@@ -53,7 +51,7 @@ export const data = new SlashCommandBuilder()
       .setRequired(true))
   .addIntegerOption(option =>
     option.setName('length')
-      .setDescription('Max length of the username (2-32)')
+      .setDescription('Max length of the username (2–32)')
       .setMinValue(2)
       .setMaxValue(32))
   .addStringOption(option =>
@@ -88,5 +86,18 @@ export async function execute(interaction) {
   for (const name of possible) {
     if (available.length >= 10) break;
 
-    await delay(350); // 👈 wait to avoid rate limits
-    const isFree = await checkUsernam
+    await delay(350);
+    const isFree = await checkUsernameAvailability(name);
+
+    if (isFree) {
+      available.push(name);
+      alreadyUsed.add(name);
+    }
+  }
+
+  if (available.length === 0) {
+    return interaction.editReply('❌ No new available usernames found with these settings. Try changing the word or increasing the length.');
+  }
+
+  await interaction.editReply(`✅ **Available usernames:**\n\n${available.map(u => `• \`${u}\``).join('\n')}`);
+}
